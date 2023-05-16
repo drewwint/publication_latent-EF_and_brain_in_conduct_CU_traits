@@ -489,7 +489,6 @@ full_df <- dplyr::left_join(df, conn_df, by = "ID")
 
 
 ## Also can just download data from here
-## NOTE there is no "stp_pos_all" only "stp_pos_all"
 full_df <- read.csv("C:\\Users\\wintersd\\OneDrive - The University of Colorado Denver\\1 Publications\\EF_latent\\full_df_FINAL.csv")[,-1]
 
 
