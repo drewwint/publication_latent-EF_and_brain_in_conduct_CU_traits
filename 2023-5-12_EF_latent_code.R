@@ -838,8 +838,9 @@ fluency ~ flu_pos_all + ICUY_TOTAL + YSR_EXTERNALIZING_RAW + sex + tanner + race
 inital_sem <- sem(inital,
                   data= full_df, 
                   estimator = "ML", 
-                  missing = "fiml",
-                  fixed.x = FALSE, se="bootstrap", bootstrap=5000)
+                  missing = "fiml", 
+                  se="bootstrap", 
+                  bootstrap=5000)
 
 
 
@@ -852,7 +853,7 @@ fluency =~ VFT_letter + VFT_category + DFT_fill_empt
 tower_total ~~ CWIT_inhib_swit_r
 
 # regressions
-inhibit ~ a1*stp_pos_all_ + ICUY_TOTAL + YSR_EXTERNALIZING_RAW + sex + tanner + race_w  + b1*cu_stppos + b2*cd_stppos + b3*three_stppos
+inhibit ~ a1*stp_pos_all + ICUY_TOTAL + YSR_EXTERNALIZING_RAW + sex + tanner + race_w  + b1*cu_stppos + b2*cd_stppos + b3*three_stppos
 shift ~   swt_pos_all + ICUY_TOTAL + YSR_EXTERNALIZING_RAW + sex + tanner + race_w  + cu_shift + cd_shift + three_shift
 fluency ~ flu_pos_all + ICUY_TOTAL + YSR_EXTERNALIZING_RAW + sex + tanner + race_w + cu_flu + cd_flu + three_flu
 
@@ -873,10 +874,7 @@ mod_1_sem <- sem(mod_1,
                  missing = "fiml", 
                  se="bootstrap", 
                  bootstrap=5000)
-# note - 
-  ## we specify "fixed.x = TRUE" because we want the covariates not in the latent factors to be fixed to the sample values
-    ## if we did not specify this - these values would vary based on association with latent factors. 
-    ## so we specify this to best represent the regression as intended. 
+
 parameterestimates(mod_1_sem, 
                    standardize=TRUE, 
                    rsquare=TRUE, 
@@ -1227,15 +1225,15 @@ full_df_2<-full_df
 
 ## Main model
   # inhibit - CU
-intxicu<-lm(inhibit_m ~ stp_pos_all_ * ICUY_TOTAL + sex + tanner + YSR_EXTERNALIZING_RAW + race_w , data=full_df_2)
-a <- interact_plot(intxicu,pred = stp_pos_all_, modx = ICUY_TOTAL)
+intxicu<-lm(inhibit_m ~ stp_pos_all * ICUY_TOTAL + sex + tanner + YSR_EXTERNALIZING_RAW + race_w , data=full_df_2)
+a <- interact_plot(intxicu,pred = stp_pos_all, modx = ICUY_TOTAL)
     # to get the stats to simulate my own figure
 psych::describeBy(a$data, a$data$modx_group) 
 
 
   # inhibit - CD
-intxicu<-lm(inhibit_m ~ stp_pos_all_ * YSR_EXTERNALIZING_RAW + sex + tanner + ICUY_TOTAL + race_w , data=full_df_2)
-b <- interact_plot(intxicu,pred = stp_pos_all_, modx = YSR_EXTERNALIZING_RAW)
+intxicu<-lm(inhibit_m ~ stp_pos_all * YSR_EXTERNALIZING_RAW + sex + tanner + ICUY_TOTAL + race_w , data=full_df_2)
+b <- interact_plot(intxicu,pred = stp_pos_all, modx = YSR_EXTERNALIZING_RAW)
     # to get the stats to simulate my own figure
 psych::describeBy(b$data, b$data$modx_group) 
 
@@ -1244,8 +1242,8 @@ psych::describeBy(b$data, b$data$modx_group)
 # Explore model
 
   # 3-way inhibit
-intxicu<-lm(ef_m ~ stp_pos_all_ * YSR_EXTERNALIZING_RAW * ICUY_TOTAL + sex + tanner + race_w , data=full_df_2)
-c <- interact_plot(intxicu,pred = stp_pos_all_, modx = YSR_EXTERNALIZING_RAW,mod2 = ICUY_TOTAL)
+intxicu<-lm(ef_m ~ stp_pos_all * YSR_EXTERNALIZING_RAW * ICUY_TOTAL + sex + tanner + race_w , data=full_df_2)
+c <- interact_plot(intxicu,pred = stp_pos_all, modx = YSR_EXTERNALIZING_RAW,mod2 = ICUY_TOTAL)
     # to get the stats to simulate my own figure
 psych::describeBy(c$data, list(c$data$modx_group,c$data$mod2_group)) 
 
@@ -1276,8 +1274,8 @@ psych::describeBy(a$data,
 
   # brain var for all
 set.seed(123)
-brain = rnorm(100,mean(a$data$stp_pos_all_),
-              sd(a$data$stp_pos_all_))
+brain = rnorm(100,mean(a$data$stp_pos_all),
+              sd(a$data$stp_pos_all))
 
 
 psych::describeBy(a$data, a$data$modx_group) 
@@ -1365,7 +1363,7 @@ psych::describeBy(b$data, b$data$modx_group)
 
 # brain var for all
 set.seed(123)
-brain = rnorm(100,mean(b$data$stp_pos_all_),sd(b$data$stp_pos_all_))
+brain = rnorm(100,mean(b$data$stp_pos_all),sd(b$data$stp_pos_all))
 
 in_cd <-t(data.frame("inh_cd_vals" = parameterestimates(mod_1_sem,
                                                         standardize=TRUE, 
@@ -1452,8 +1450,8 @@ psych::describeBy(c$data,
 
 # brain var for all - for all three figs
 set.seed(123)
-brain = rnorm(100,mean(c$data$stp_pos_all_),
-              sd(c$data$stp_pos_all_))
+brain = rnorm(100,mean(c$data$stp_pos_all),
+              sd(c$data$stp_pos_all))
 
 
 ### association values (pulling from mod terms in model)
