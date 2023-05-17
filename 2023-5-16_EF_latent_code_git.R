@@ -2026,8 +2026,132 @@ ggplot(data = flu_ef, aes(x= brain, y= fluency_s, color = cond)) +
         legend.position = c(0.9,0.8)) 
 
 
-
 # ggsave(path = "C:\\Users\\wintersd\\OneDrive - The University of Colorado Denver\\1 Publications\\EF_latent\\Figures", width = 6.5, height = 3.5, filename = "ef_cu_fluency.tiff", device='tiff', dpi=700, limitsize = FALSE)
+
+
+
+
+
+
+            ##### Supplemental Analyses - efficiency ####
+
+library(igraph)
+
+for(i in 1:length(fit_gm$path_est_mats))
+{
+  assign(paste0("inb_eff",i),
+         mean(local_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE))))
+  # a <- mget(paste0("inb_eff", 1:length(fit_gm$path_est_mats)))
+  # a <-rlist::list.ungroup(a)
+  # 
+  # inb_eff_df<-as.data.frame(cbind(a))
+  # colnames(inb_eff_df)<-c("inb_eff_all")
+}
+
+for(i in 1:length(fit_gm$path_est_mats))
+{
+  assign(paste0("inb_eff",i),
+         mean(local_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE))))
+  a <- mget(paste0("inb_eff", 1:length(fit_gm$path_est_mats)))
+  a <-rlist::list.ungroup(a)
+  
+  inb_eff_df<-as.data.frame(cbind(a))
+  colnames(inb_eff_df)<-c("inb_eff_all")
+}
+
+
+
+
+eff_inhb_df <- data.frame("ID"=rkl86$ID,"eff_inhb"=inb_eff_df$inb_eff_all)
+
+full_df <- left_join(full_df,eff_inhb_df, by= "ID")
+
+  # correlations
+cor.test(full_df$inhibit_m,full_df$eff_inhb)  # not sig
+cor.test(full_df$ef_m,full_df$eff_inhb)       # not sig
+cor.test(full_df$ICUY_TOTAL,full_df$eff_inhb) # not sig
+cor.test(full_df$YSR_EXTERNALIZING_RAW,full_df$eff_inhb)  # not sig
+
+
+  # analyses
+eff <-'
+# EF latent factors
+  # bx data on EFs
+eff_inhb ~ ICUY_TOTAL + YSR_EXTERNALIZING_RAW  + sex + tanner + SES 
+
+'
+
+eff_sem <- sem(eff,data= full_df, 
+               estimator = "ML", 
+               missing = "fiml", 
+               se="bootstrap", 
+               bootstrap=5000)
+parameterestimates(eff_sem, 
+                   standardize=TRUE, 
+                   rsquare = TRUE, 
+                   boot.ci.type = "bca.simple")[c(1:5,28),c(1:9,11)]
+
+
+
+
+inb_e <-'
+# EF latent factors
+inhibit =~ CWIT_inhibit_r + CWIT_inhib_swit_r + tower_total
+shift =~ TMT_switch_r + DFT_switch_r + sort_sorts
+fluency =~ VFT_letter + VFT_category + DFT_fill_empt
+
+
+# regressions
+  # brain in inbibition 
+inhibit ~ eff_inhb + ICUY_TOTAL + YSR_EXTERNALIZING_RAW  + sex + tanner + SES 
+
+'
+
+
+inb_e_sem <- sem(inb_e,data= full_df, 
+                 estimator = "ML", 
+                 missing = "fiml", 
+                 se="bootstrap", 
+                 bootstrap=5000)
+parameterestimates(inb_e_sem, 
+                   standardize=TRUE, 
+                   rsquare = TRUE, 
+                   boot.ci.type = "bca.simple")[c(10:15,77),c(1:9,11)]
+
+
+
+
+ef_e <-'
+# EF latent factors
+inhibit =~ CWIT_inhibit_r + CWIT_inhib_swit_r + tower_total
+shift =~ TMT_switch_r + DFT_switch_r + sort_sorts
+fluency =~ VFT_letter + VFT_category + DFT_fill_empt
+ef =~ inhibit + shift + fluency
+
+# regressions
+  # brain in inbibition 
+ef ~ eff_inhb + ICUY_TOTAL + YSR_EXTERNALIZING_RAW  + sex + tanner + SES 
+
+'
+
+
+ef_e_sem <- sem(ef_e,data= full_df, 
+                estimator = "ML", 
+                missing = "fiml", 
+                se="bootstrap", 
+                bootstrap=5000)
+parameterestimates(ef_e_sem, 
+                   standardize=TRUE, 
+                   rsquare = TRUE, 
+                   boot.ci.type = "bca.simple")[c(13:18,84),c(1:9,11)]
+
+
+
+
+
+
+
+
 
 
 
