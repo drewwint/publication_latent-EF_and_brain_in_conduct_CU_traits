@@ -2035,12 +2035,13 @@ ggplot(data = flu_ef, aes(x= brain, y= fluency_s, color = cond)) +
 
             ##### Supplemental Analyses - efficiency ####
 
+#### GLOBAL EFFICIENCY ####
 library(igraph)
 
 for(i in 1:length(fit_gm$path_est_mats))
 {
   assign(paste0("inb_eff",i),
-         mean(local_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE))))
+         global_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE)))
   # a <- mget(paste0("inb_eff", 1:length(fit_gm$path_est_mats)))
   # a <-rlist::list.ungroup(a)
   # 
@@ -2051,7 +2052,7 @@ for(i in 1:length(fit_gm$path_est_mats))
 for(i in 1:length(fit_gm$path_est_mats))
 {
   assign(paste0("inb_eff",i),
-         mean(local_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE))))
+         global_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE)))
   a <- mget(paste0("inb_eff", 1:length(fit_gm$path_est_mats)))
   a <-rlist::list.ungroup(a)
   
@@ -2072,6 +2073,10 @@ cor.test(full_df$ef_m,full_df$eff_inhb)       # not sig
 cor.test(full_df$ICUY_TOTAL,full_df$eff_inhb) # not sig
 cor.test(full_df$YSR_EXTERNALIZING_RAW,full_df$eff_inhb)  # not sig
 
+cor.test(full_df$stp_pos_all,full_df$eff_inhb) ## Substantial positive association 
+  ## seems as though these are highly related but there is some difference in variance
+    ## r = 0.667 and r2 = 0.442
+    ## there is still substantial variance not accounted for - so they are not the same thing. 
 
   # analyses
 eff <-'
@@ -2149,16 +2154,84 @@ parameterestimates(ef_e_sem,
 
 
 
+#### LOCAL EFFICIENCY ####
+
+for(i in 1:length(fit_gm$path_est_mats))
+{
+  assign(paste0("inb_eff",i),
+         local_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE)))
+  # a <- mget(paste0("inb_eff", 1:length(fit_gm$path_est_mats)))
+  # a <-rlist::list.ungroup(a)
+  # 
+  # inb_eff_df<-as.data.frame(cbind(a))
+  # colnames(inb_eff_df)<-c("inb_eff_all")
+}
+
+for(i in 1:length(fit_gm$path_est_mats))
+{
+  assign(paste0("inb_eff",i),
+         local_efficiency(graph.adjacency(data.matrix(abs(fit_gm$path_est_mats[[i]][1:7,10:16]) + abs(fit_gm$path_est_mats[[i]][1:7,1:7])), weighted = TRUE)))
+  a <- mget(paste0("inb_eff", 1:length(fit_gm$path_est_mats)))
+  a <-rlist::list.ungroup(a)
+  
+  inb_eff_df<-data.frame(matrix(a,86,7))
+  colnames(inb_eff_df)<-c("IFC_Ra_eff",  "IFC_La_eff",  "IFC_Rb_eff",  "IFC_Lb_eff",  "DLPFC_R_eff", "DLPFC_L_eff", "ACC_eff")
+}
+
+
+inb_eff_df$ID <- rkl86$ID
+
+full_df <- left_join(full_df,inb_eff_df, by= "ID")
 
 
 
 
+eff2 <-'
+# ef local regressions
+IFC_Ra_eff + IFC_La_eff + IFC_Rb_eff + IFC_Lb_eff + DLPFC_R_eff + DLPFC_L_eff + ACC_eff ~ ICUY_TOTAL + YSR_EXTERNALIZING_RAW  + sex + tanner + SES 
+'
+
+eff_sem2 <- sem(eff2,data= full_df, estimator = "ML", missing = "fiml", se="bootstrap", bootstrap=5000)
+parameterestimates(eff_sem2, standardize=TRUE, rsquare = TRUE)[c(1:35, 91:97),c(1:5,11,6:9)]
 
 
 
 
+inb_e2 <-'
+# EF latent factors
+inhibit =~ CWIT_inhibit_r + CWIT_inhib_swit_r + tower_total
+shift =~ TMT_switch_r + DFT_switch_r + sort_sorts
+fluency =~ VFT_letter + VFT_category + DFT_fill_empt
 
 
+# regressions
+  # brain in inbibition 
+inhibit ~ IFC_Ra_eff + IFC_La_eff + IFC_Rb_eff + IFC_Lb_eff + DLPFC_R_eff + DLPFC_L_eff + ACC_eff + ICUY_TOTAL + YSR_EXTERNALIZING_RAW  + sex + tanner + SES 
+'
+
+
+inb_e_sem2 <- sem(inb_e2,data= full_df, estimator = "ML", missing = "fiml", se="bootstrap", bootstrap=5000)
+parameterestimates(inb_e_sem2, standardize=TRUE, rsquare = TRUE)[c(10:21,146),c(1:5,11,6:9)]
+
+
+
+
+ef_e2 <-'
+# EF latent factors
+inhibit =~ CWIT_inhibit_r + CWIT_inhib_swit_r + tower_total
+shift =~ TMT_switch_r + DFT_switch_r + sort_sorts
+fluency =~ VFT_letter + VFT_category + DFT_fill_empt
+ef =~ inhibit + shift + fluency
+
+# regressions
+  # brain in inbibition 
+ef ~ IFC_Ra_eff + IFC_La_eff + IFC_Rb_eff + IFC_Lb_eff + DLPFC_R_eff + DLPFC_L_eff + ACC_eff + ICUY_TOTAL + YSR_EXTERNALIZING_RAW  + sex + tanner + SES # + eff_inhb:YSR_EXTERNALIZING_RAW
+
+'
+
+
+ef_e_sem2 <- sem(ef_e2,data= full_df, estimator = "ML", missing = "fiml", se="bootstrap", bootstrap=5000)
+parameterestimates(ef_e_sem2, standardize=TRUE, rsquare = TRUE)[c(13:24,153),c(1:5,11,6:9)]
 
 
 
